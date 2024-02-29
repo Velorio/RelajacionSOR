@@ -8,7 +8,7 @@ def pedir_coeficientes(n):
     while True:
         try:
             coeficientes = input("Ingrese los coeficientes separados por espacios: ").split()
-            coeficientes = [Fraction(coef) for coef in coeficientes]
+            coeficientes = [float(coef) for coef in coeficientes]
             if len(coeficientes) != n:
                 raise ValueError("Debe ingresar exactamente {} coeficientes.".format(n))
             break
@@ -36,7 +36,7 @@ def definir_sistema():
         A.append(coeficientes)
         while True:
             try:
-                termino_independiente = Fraction(input("Ingrese el término independiente b[{}]: ".format(i + 1)))
+                termino_independiente = float(input("Ingrese el término independiente b[{}]: ".format(i + 1)))
                 break
             except ValueError:
                 print("Ingrese un valor válido para el término independiente.")
@@ -50,14 +50,14 @@ def imprimir_matriz(matriz):
 
 def imprimir_vector(vector):
     for elemento in vector:
-        elemento = Fraction(elemento)
-        if elemento.denominator == 1:
-            print(elemento.numerator, end=" ")
+        elemento_fraccion = Fraction(elemento)
+        if elemento_fraccion.denominator == 1:
+            print(elemento_fraccion.numerator, end=" ")
         else:
-            if elemento.numerator < 0:
-                print("-{}/{} ".format(abs(elemento.numerator), elemento.denominator), end="")
+            if elemento_fraccion.numerator < 0:
+                print("-{}/{} ".format(abs(elemento_fraccion.numerator), elemento_fraccion.denominator), end="")
             else:
-                print("{}/{} ".format(elemento.numerator, elemento.denominator), end="")
+                print("{}/{} ".format(elemento_fraccion.numerator, elemento_fraccion.denominator), end="")
     print()
 
 def solicitar_tolerancia():
@@ -76,7 +76,7 @@ def solicitar_tolerancia():
 def norma_euclidiana(vector1,vector2):
     c = [ai - bi for ai, bi in zip(vector1, vector2)]
     diferencia = np.array(c) ##c = Vector1-Vector2
-    sumacuadrada = Fraction(0)
+    sumacuadrada = 0
     for elemento in diferencia:
         sumacuadrada += (elemento**2)##sumatoria de ci^2
     return math.sqrt(float(sumacuadrada))##raiz de la sumatoria
@@ -93,10 +93,10 @@ def gauss_seidel(A,b,k,x_previo,tolerancia):##A:=matriz; b:=terminos independien
     print()
     for i in range(n):
         aii = A[i][i] ## Selecciona el valor del denominador A_ii
-        xi=Fraction(0)
+        xi=0
         for j in range(n):
-            xi -= (Fraction(A[i][j], aii) * x[j]) if j != i else 0 ## (Aij/Aii)*xj 
-        xi += Fraction(b[i],aii)
+            xi -= (float(A[i][j]/aii) * x[j]) if j != i else 0 ## (Aij/Aii)*xj 
+        xi += float(b[i]/aii)
         x[i]=xi ##Agrega xi a x // en las siguientes filas se opera con el nuevo valor para x[i]
     
     print(f"X^({k}) : ")
@@ -148,10 +148,10 @@ def relajacionSOR(A,b,k,x_previo,tolerancia,w): ## A: matriz; b:t_independientes
     print()
     for i in range(n):
         aii = A[i][i] ## Selecciona el valor del denominador A_ii
-        xi=Fraction(0)
+        xi=0
         for j in range(n):
-            xi -= (Fraction(A[i][j], aii) * x[j]) if j != i else 0 ## (Aij/Aii)*xj 
-        xi += Fraction(b[i],aii)
+            xi -= (float(A[i][j]/ aii) * x[j]) if j != i else 0 ## (Aij/Aii)*xj 
+        xi += float(b[i]/aii)
         xi = ( w * xi ) + ((1-w)*x_previo[i])
         x[i]=xi ##Agrega xi a x // en las siguientes filas se opera con el nuevo valor para x[i]
     
@@ -168,6 +168,30 @@ def relajacionSOR(A,b,k,x_previo,tolerancia,w): ## A: matriz; b:t_independientes
     else:
         return relajacionSOR(A,b,k+1,x,tolerancia,w)
 
+def es_definida_positiva(matriz):
+    # Verificar si la matriz es cuadrada
+    if matriz.shape[0] != matriz.shape[1]:
+        return False
+    
+    # Verificar si la matriz es simétrica
+    if not np.allclose(matriz, matriz.T):
+        return False
+    
+    # Verificar si todos los autovalores son positivos
+    return np.all(np.linalg.eigvals(matriz) > 0)
+
+def es_diagonal_dominante(matriz):
+    # Verificar si la matriz es cuadrada
+    if matriz.shape[0] != matriz.shape[1]:
+        return False
+    
+    # Obtener la diagonal de la matriz
+    diagonal = np.diag(np.abs(matriz))
+    
+    # Verificar si cada elemento de la diagonal es mayor o igual que la suma de los elementos
+    # absolutos de la fila, excluyendo el elemento de la diagonal
+    sin_diagonal = np.sum(np.abs(matriz), axis=1) - diagonal
+    return np.all(diagonal >= sin_diagonal)
 
 def factorDeRelajacion(A):
     # Obtener la matriz Tj
